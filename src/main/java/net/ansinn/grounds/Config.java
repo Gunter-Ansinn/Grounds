@@ -31,7 +31,11 @@ public class Config extends Properties {
 
     @Override
     public Object getOrDefault(Object key, Object defaultValue) {
-        return super.getOrDefault(key, defaultValue);
+        var result = super.getOrDefault(key, defaultValue);
+
+        if (result instanceof String stringResult)
+            return resolveProperty(stringResult);
+        return result;
     }
 
     private String resolveProperty(String propertyInput) {
@@ -69,12 +73,12 @@ public class Config extends Properties {
             var now = Instant.now();
             var zonedNow = now.atZone(ZoneId.systemDefault());
 
-            var formatter = switch (args[0]) {
+            var formatter = args.length > 0 ? switch (args[0]) {
                 case "day" -> DateTimeFormatter.ofPattern("EEEE");
                 case "month" -> DateTimeFormatter.ofPattern("MMMM");
                 case "year" -> DateTimeFormatter.ofPattern("yyyy");
-                default -> DateTimeFormatter.ofPattern("M/d/yyyy");
-            };
+                case null, default -> DateTimeFormatter.ofPattern("M/d/yyyy");
+            } : DateTimeFormatter.ofPattern("M/d/yyyy");
 
             return zonedNow.format(formatter);
         });
